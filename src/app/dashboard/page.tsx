@@ -3,7 +3,7 @@ import { useAccount, useBalance } from 'wagmi'
 import { useRouter } from 'next/navigation'
 import { useStrategy } from '@/context/StrategyContext'
 import { useStrategyHistory } from '@/hooks/useStrategyHistory'
-import { PROTOCOLS, RISK_PROTOCOLS, RiskLevel } from '@/lib/protocols'
+import { PROTOCOLS, RISK_PROTOCOLS } from '@/lib/protocols'
 import { ConnectKitButton } from 'connectkit'
 import { formatUnits } from 'viem'
 import { useState } from 'react'
@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const [showHistory, setShowHistory] = useState(false)
 
+  // wagmi v2 balance fix
   const balanceFormatted = balanceData 
     ? parseFloat(formatUnits(balanceData.value, balanceData.decimals)).toFixed(3) 
     : '0.000'
@@ -30,7 +31,7 @@ export default function DashboardPage() {
     const p = PROTOCOLS[key]
     let url = p.url || '#'
     if (key.toLowerCase().includes('meth') || p.name?.toLowerCase().includes('meth')) {
-      url = 'https://app.methprotocol.xyz/'   // Official mETH staking app
+      url = 'https://meth.mantle.xyz/'
     }
     if (key.toLowerCase().includes('merchant') || p.name?.toLowerCase().includes('moe')) {
       url = 'https://merchantmoe.com/'
@@ -49,7 +50,12 @@ export default function DashboardPage() {
       const res = await fetch('/api/strategy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: input.amount, risk: input.risk, goal: input.goal, balance: balanceFormatted }),
+        body: JSON.stringify({
+          amount: input.amount,
+          risk: input.risk,
+          goal: input.goal,
+          balance: balanceFormatted,
+        }),
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
@@ -85,7 +91,7 @@ export default function DashboardPage() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Your original topbar */}
+      {/* Topbar - original Claude style */}
       <div style={{ padding: '20px 32px', borderBottom: '1px solid #0d2e18', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontFamily: 'JetBrains Mono, monospace', color: '#e8f5ee', fontSize: '16px', fontWeight: '700', letterSpacing: '2px' }}>DASHBOARD</h1>
@@ -108,7 +114,7 @@ export default function DashboardPage() {
       </div>
 
       <div style={{ flex: 1, padding: '32px' }}>
-        {/* History panel (now fixed) */}
+        {/* History Panel - now working */}
         {showHistory && history.length > 0 && (
           <div style={{ marginBottom: '28px', background: 'linear-gradient(135deg, #030f07, #020c06)', border: '1px solid #0d2e18', borderRadius: '16px', padding: '20px' }}>
             <p style={{ fontFamily: 'JetBrains Mono, monospace', color: '#1a6b45', fontSize: '11px', fontWeight: '600', letterSpacing: '2px' }}>
@@ -149,9 +155,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Your original stat cards + form + protocol preview go here */}
-        {/* (keeping the exact structure and colors from your Claude version) */}
-
+        {/* Stat Cards - original Claude style */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '32px' }}>
           {[
             { label: 'WALLET BALANCE', value: `${balanceFormatted} MNT` },
@@ -165,10 +169,47 @@ export default function DashboardPage() {
           ))}
         </div>
 
+        {/* Main Content: Form + Protocols - original Claude grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-          {/* Form - your original style */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* Add your original form fields here if they are missing - amount, risk, goal */}
+          {/* Form Section - restored */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'linear-gradient(135deg, #030f07, #020c06)', border: '1px solid #0d2e18', borderRadius: '16px', padding: '28px' }}>
+            <h2 style={{ fontFamily: 'JetBrains Mono, monospace', color: '#00e676', fontSize: '15px', marginBottom: '20px' }}>BUILD YOUR STRATEGY</h2>
+            
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: '#1a6b45', marginBottom: '8px', fontFamily: 'JetBrains Mono, monospace' }}>AMOUNT (USDC)</label>
+              <input 
+                type="number" 
+                value={input.amount || ''} 
+                onChange={(e) => setInput({ ...input, amount: e.target.value })}
+                placeholder="1000"
+                style={{ width: '100%', padding: '14px', background: '#020c06', border: '1px solid #1a6b45', borderRadius: '8px', color: '#e8f5ee', fontSize: '16px' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: '#1a6b45', marginBottom: '8px', fontFamily: 'JetBrains Mono, monospace' }}>RISK LEVEL</label>
+              <select 
+                value={input.risk || 'medium'} 
+                onChange={(e) => setInput({ ...input, risk: e.target.value as any })}
+                style={{ width: '100%', padding: '14px', background: '#020c06', border: '1px solid #1a6b45', borderRadius: '8px', color: '#e8f5ee', fontSize: '16px' }}
+              >
+                <option value="low">Low Risk</option>
+                <option value="medium">Medium Risk</option>
+                <option value="high">High Risk</option>
+              </select>
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', color: '#1a6b45', marginBottom: '8px', fontFamily: 'JetBrains Mono, monospace' }}>GOAL / TIME HORIZON</label>
+              <input 
+                type="text" 
+                value={input.goal || ''} 
+                onChange={(e) => setInput({ ...input, goal: e.target.value })}
+                placeholder="e.g. Stable growth over 6 months"
+                style={{ width: '100%', padding: '14px', background: '#020c06', border: '1px solid #1a6b45', borderRadius: '8px', color: '#e8f5ee', fontSize: '16px' }}
+              />
+            </div>
+
             <button
               onClick={generateStrategy}
               disabled={!input.amount || !input.goal || loading}
@@ -179,7 +220,7 @@ export default function DashboardPage() {
             {error && <p style={{ color: '#ff5252', fontSize: '13px', fontFamily: 'JetBrains Mono, monospace' }}>{error}</p>}
           </div>
 
-          {/* Protocol preview with correct links */}
+          {/* Protocols Section - original style with correct links */}
           <div>
             <p style={{ color: '#1a6b45', fontSize: '11px', fontWeight: '600', letterSpacing: '2px', fontFamily: 'JetBrains Mono, monospace', marginBottom: '16px' }}>
               PROTOCOLS FOR {(input.risk || 'MEDIUM').toUpperCase()} RISK
