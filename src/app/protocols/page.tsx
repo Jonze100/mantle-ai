@@ -8,13 +8,12 @@ const RISK_COLORS: Record<string, string> = {
   high: '#ff5252',
 }
 
-const LIVE_TVL_MAP: Record<string, keyof ReturnType<typeof useDefiData>> = {
+const LIVE_TVL_MAP: Record<string, string> = {
   aave: 'aaveTVL',
   meth: 'methTVL',
   agni: 'agniTVL',
   init: 'initTVL',
   merchantMoe: 'merchantMoeTVL',
-  bybit: null,
 }
 
 export default function ProtocolsPage() {
@@ -23,7 +22,12 @@ export default function ProtocolsPage() {
   function getLiveTVL(key: string, fallback: string): string {
     const field = LIVE_TVL_MAP[key]
     if (!field || !defi) return fallback
-    return (defi[field] as string) ?? fallback
+    const val = (defi as Record<string, string>)[field]
+    return val ?? fallback
+  }
+
+  function hasLiveTVL(key: string): boolean {
+    return !!LIVE_TVL_MAP[key] && !!defi
   }
 
   return (
@@ -40,9 +44,6 @@ export default function ProtocolsPage() {
               <span style={{ fontFamily: 'JetBrains Mono, monospace', color: '#1a6b45', fontSize: '10px' }}>
                 MANTLE TVL: <span style={{ color: '#00e676', fontWeight: '700' }}>{defi.mantleTVL}</span>
               </span>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', color: '#0d2e18', fontSize: '9px', marginLeft: '4px' }}>
-                updated {defi.lastUpdated}
-              </span>
             </div>
           )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#030f07', border: '1px solid #1a6b45', borderRadius: '20px', padding: '8px 16px' }}>
@@ -53,10 +54,14 @@ export default function ProtocolsPage() {
       </div>
 
       <div style={{ flex: 1, padding: '32px' }}>
-        <p style={{ color: '#1a6b45', fontSize: '11px', fontWeight: '600', letterSpacing: '2px', fontFamily: 'JetBrains Mono, monospace', marginBottom: '24px' }}>ALL INTEGRATED PROTOCOLS</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
+          <p style={{ color: '#1a6b45', fontSize: '11px', fontWeight: '600', letterSpacing: '2px', fontFamily: 'JetBrains Mono, monospace' }}>ALL INTEGRATED PROTOCOLS</p>
+          {defi && <p style={{ fontFamily: 'JetBrains Mono, monospace', color: '#0d2e18', fontSize: '9px' }}>TVL updated {defi.lastUpdated}</p>}
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
           {Object.entries(PROTOCOLS).map(([key, protocol]) => {
             const liveTVL = getLiveTVL(key, protocol.tvl)
+            const isLive = hasLiveTVL(key)
             return (
               <div key={key} style={{ background: 'linear-gradient(135deg, #030f07, #020c06)', border: '1px solid #0d2e18', borderRadius: '16px', padding: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
@@ -77,9 +82,10 @@ export default function ProtocolsPage() {
                     <p style={{ fontFamily: 'JetBrains Mono, monospace', color: '#00e676', fontSize: '16px', fontWeight: '700' }}>{protocol.apy.min}–{protocol.apy.max}%</p>
                   </div>
                   <div style={{ background: '#020c06', border: '1px solid #0d2e18', borderRadius: '10px', padding: '14px' }}>
-                    <p style={{ color: '#1a6b45', fontSize: '10px', fontWeight: '600', letterSpacing: '2px', fontFamily: 'JetBrains Mono, monospace', marginBottom: '6px' }}>
-                      TVL {defi && LIVE_TVL_MAP[key] && <span style={{ color: '#00e676', fontSize: '8px' }}>● LIVE</span>}
-                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                      <p style={{ color: '#1a6b45', fontSize: '10px', fontWeight: '600', letterSpacing: '2px', fontFamily: 'JetBrains Mono, monospace' }}>TVL</p>
+                      {isLive && <span style={{ color: '#00e676', fontSize: '8px', fontFamily: 'JetBrains Mono, monospace' }}>● LIVE</span>}
+                    </div>
                     <p style={{ fontFamily: 'JetBrains Mono, monospace', color: '#00e676', fontSize: '16px', fontWeight: '700' }}>{liveTVL}</p>
                   </div>
                 </div>
@@ -100,9 +106,7 @@ export default function ProtocolsPage() {
                   <p style={{ color: '#1a6b45', fontSize: '10px', fontWeight: '600', letterSpacing: '2px', fontFamily: 'JetBrains Mono, monospace', marginBottom: '10px' }}>RISK FACTORS</p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {protocol.riskFactors.map((r, i) => (
-                      <span key={i} style={{ color: '#ff8a80', fontSize: '12px', fontFamily: 'JetBrains Mono, monospace', background: '#1a0a0a', border: '1px solid #3d101040', padding: '4px 10px', borderRadius: '20px' }}>
-                        {r}
-                      </span>
+                      <span key={i} style={{ color: '#ff8a80', fontSize: '12px', fontFamily: 'JetBrains Mono, monospace', background: '#1a0a0a', border: '1px solid #3d101040', padding: '4px 10px', borderRadius: '20px' }}>{r}</span>
                     ))}
                   </div>
                 </div>
