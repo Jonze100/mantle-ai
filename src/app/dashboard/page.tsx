@@ -15,14 +15,16 @@ const RISK_COLORS: Record<string, string> = {
 
 export default function DashboardPage() {
   const { address, isConnected } = useAccount()
-  const { data: balance } = useBalance({ address, chainId: 5000 })
+  const balanceResult = useBalance({ address, chainId: 5000 })
+  const balanceFormatted = balanceResult.data?.formatted ?? '0'
+  const raw = parseFloat(balanceFormatted)
+  const balanceDisplay = isNaN(raw) ? '0.000' : raw.toFixed(3)
+
   const { input, setInput, setStrategy, setLoading, setError, loading, error } = useStrategy()
-  const { history, clearHistory } = useStrategyHistory()
+  const { history } = useStrategyHistory()
   const router = useRouter()
   const [showHistory, setShowHistory] = useState(false)
 
-  const raw = parseFloat(balance?.formatted ?? '0')
-  const balanceDisplay = isNaN(raw) ? '0.000' : raw.toFixed(3)
   const relevantProtocols = RISK_PROTOCOLS[input.risk].map((key) => ({ key, ...PROTOCOLS[key] }))
 
   async function generateStrategy() {
@@ -101,42 +103,31 @@ export default function DashboardPage() {
           <div style={{ marginBottom: '28px', background: 'linear-gradient(135deg, #030f07, #020c06)', border: '1px solid #0d2e18', borderRadius: '16px', padding: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <p style={{ fontFamily: 'JetBrains Mono, monospace', color: '#1a6b45', fontSize: '11px', fontWeight: '600', letterSpacing: '2px' }}>
-                STRATEGY HISTORY — click RESTORE to reload any strategy
+                STRATEGY HISTORY — click RESTORE to reload
               </p>
-              <button
-                onClick={clearHistory}
-                style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', fontWeight: '600', background: 'transparent', border: '1px solid #3d1010', borderRadius: '8px', color: '#ff5252', padding: '5px 12px', cursor: 'pointer', letterSpacing: '1px' }}
-              >
-                CLEAR ALL
-              </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '420px', overflowY: 'auto' }}>
               {history.map((entry, idx) => (
                 <div key={entry.id} style={{ background: '#020c06', border: '1px solid #0d2e18', borderRadius: '12px', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ flex: 1 }}>
-                    {/* Date + time + badges */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' as const }}>
                       {idx === 0 && (
                         <span style={{ background: 'linear-gradient(135deg, #00c853, #1de9b6)', color: '#000', fontSize: '9px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px', fontFamily: 'JetBrains Mono, monospace' }}>LATEST</span>
                       )}
                       <span style={{ fontFamily: 'JetBrains Mono, monospace', color: '#00e676', fontSize: '11px', fontWeight: '600' }}>{entry.date}</span>
                       <span style={{ fontFamily: 'JetBrains Mono, monospace', color: '#1a6b45', fontSize: '11px' }}>{entry.timestamp}</span>
-                      <span style={{ color: RISK_COLORS[entry.input.risk] ?? '#ffb300', fontSize: '10px', fontFamily: 'JetBrains Mono, monospace', background: '#030f07', border: `1px solid ${RISK_COLORS[entry.input.risk] ?? '#ffb300'}40`, padding: '2px 8px', borderRadius: '20px' }}>
-                        {entry.input.risk} risk
-                      </span>
-                      <span style={{ color: '#2d7a4f', fontSize: '11px', fontFamily: 'JetBrains Mono, monospace' }}>${entry.input.amount} USDC</span>
+                      <span style={{ color: RISK_COLORS[entry.input.risk] ?? '#ffb300', fontSize: '10px', fontFamily: 'JetBrains Mono, monospace' }}>{entry.input.risk} risk</span>
+                      <span style={{ color: '#2d7a4f', fontSize: '11px' }}>${entry.input.amount} USDC</span>
                     </div>
-                    {/* Summary */}
                     <p style={{ color: '#4db87a', fontSize: '12px', lineHeight: '1.5' }}>
                       {entry.strategy.summary?.slice(0, 100)}...
                     </p>
-                    {/* Goal */}
-                    <p style={{ color: '#1a6b45', fontSize: '11px', marginTop: '4px', fontStyle: 'italic' }}>
-                      Goal: {entry.input.goal?.slice(0, 60)}{entry.input.goal?.length > 60 ? '...' : ''}
+                    <p style={{ color: '#1a6b45', fontSize: '11px', marginTop: '4px', fontStyle: 'italic' as const }}>
+                      Goal: {entry.input.goal?.slice(0, 60)}{(entry.input.goal?.length ?? 0) > 60 ? '...' : ''}
                     </p>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexShrink: 0, marginLeft: '16px' }}>
-                    <div style={{ textAlign: 'right' }}>
+                    <div style={{ textAlign: 'right' as const }}>
                       <p style={{ fontFamily: 'JetBrains Mono, monospace', color: '#00e676', fontSize: '18px', fontWeight: '700' }}>
                         {entry.strategy.estimatedAPY?.min ?? 0}–{entry.strategy.estimatedAPY?.max ?? 0}%
                       </p>
@@ -144,7 +135,7 @@ export default function DashboardPage() {
                     </div>
                     <button
                       onClick={() => restoreStrategy(entry)}
-                      style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', fontWeight: '700', background: 'linear-gradient(135deg, #00c853, #1de9b6)', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', letterSpacing: '1px', whiteSpace: 'nowrap' }}
+                      style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', fontWeight: '700', background: 'linear-gradient(135deg, #00c853, #1de9b6)', color: '#000', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', letterSpacing: '1px', whiteSpace: 'nowrap' as const }}
                     >
                       RESTORE →
                     </button>
@@ -207,7 +198,7 @@ export default function DashboardPage() {
                 onChange={(e) => setInput({ ...input, goal: e.target.value })}
                 placeholder="e.g. I want steady passive income with minimal risk, holding for 6 months"
                 rows={4}
-                style={{ width: '100%', background: '#020c06', border: '1px solid #0d2e18', borderRadius: '10px', padding: '14px 16px', color: '#e8f5ee', fontSize: '14px', resize: 'none', lineHeight: '1.6' }}
+                style={{ width: '100%', background: '#020c06', border: '1px solid #0d2e18', borderRadius: '10px', padding: '14px 16px', color: '#e8f5ee', fontSize: '14px', resize: 'none' as const, lineHeight: '1.6' }}
               />
             </div>
 
