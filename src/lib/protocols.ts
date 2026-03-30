@@ -1,0 +1,77 @@
+export const PROTOCOLS = {
+  aave: {
+    name: 'Aave V3',
+    type: 'Lending',
+    apy: { min: 4.2, max: 7.8 },
+    risk: 'low' as const,
+    tvl: '$1.34B',
+    description: 'Supply stablecoins for steady yield. Safest option on Mantle with $1.34B TVL.',
+    steps: ['Go to app.aave.com → Mantle market', 'Connect your wallet', 'Click Supply and choose your stablecoin', 'Earn yield automatically'],
+    riskFactors: ['Smart contract risk (fully audited)', 'Interest rate fluctuation'],
+    mantle_link: 'https://app.aave.com/markets/?marketName=proto_mantle_v3',
+  },
+  merchantMoe: {
+    name: 'Merchant Moe',
+    type: 'DEX / Liquidity',
+    apy: { min: 8.5, max: 22 },
+    risk: 'medium' as const,
+    tvl: '$180M',
+    description: 'Provide liquidity to top trading pairs. Earn trading fees plus MOE token rewards.',
+    steps: ['Visit merchantmoe.com', 'Select a liquidity pool (USDC/MNT recommended)', 'Add liquidity in the token pair', 'Stake LP tokens for bonus MOE rewards'],
+    riskFactors: ['Impermanent loss', 'Token price volatility'],
+    mantle_link: 'https://merchantmoe.com',
+  },
+  agni: {
+    name: 'AGNI Finance',
+    type: 'Concentrated Liquidity',
+    apy: { min: 12, max: 45 },
+    risk: 'medium' as const,
+    tvl: '$95M',
+    description: 'Capital-efficient concentrated liquidity AMM. Higher yields, requires active management.',
+    steps: ['Go to agni.finance', 'Choose a trading pair and set your price range', 'Deposit concentrated liquidity position', 'Monitor and rebalance if price moves out of range'],
+    riskFactors: ['Amplified impermanent loss', 'Position goes out of range'],
+    mantle_link: 'https://agni.finance',
+  },
+  meth: {
+    name: 'mETH Protocol',
+    type: 'LST Staking',
+    apy: { min: 3.8, max: 5.5 },
+    risk: 'low' as const,
+    tvl: '$620M',
+    description: "Stake ETH into Mantle's native liquid staking token. Composable across Mantle DeFi.",
+    steps: ['Visit meth.mantle.xyz', 'Stake ETH to receive mETH tokens', 'Optionally convert to cmETH for compounding', 'Use mETH as collateral in other protocols'],
+    riskFactors: ['ETH price exposure', 'Slashing risk (minimal)'],
+    mantle_link: 'https://meth.mantle.xyz',
+  },
+  init: {
+    name: 'INIT Capital',
+    type: 'Leveraged Yield',
+    apy: { min: 18, max: 60 },
+    risk: 'high' as const,
+    tvl: '$45M',
+    description: 'Onchain liquidity hooks for leveraged yield. Highest potential returns, highest risk.',
+    steps: ['Visit app.init.capital', 'Deposit collateral (mETH or USDC)', 'Open a leveraged position using liquidity hooks', 'Monitor health factor closely to avoid liquidation'],
+    riskFactors: ['Liquidation risk', 'Smart contract complexity', 'Leverage amplifies losses'],
+    mantle_link: 'https://app.init.capital',
+  },
+  bybit: {
+    name: 'Bybit Mantle Vault',
+    type: 'CeFi-to-DeFi',
+    apy: { min: 5.5, max: 9 },
+    risk: 'low' as const,
+    tvl: '$200M+',
+    description: 'CeFi vault powered by Aave + CIAN. Easiest DeFi entry point, no wallet setup needed.',
+    steps: ['Log in to your Bybit account', 'Navigate to Earn → Mantle Vault', 'Deposit USDT or USDC', 'Earn auto-compounded yield automatically'],
+    riskFactors: ['Counterparty risk (Bybit)', 'Smart contract risk'],
+    mantle_link: 'https://www.bybit.com/earn',
+  },
+} as const
+
+export type ProtocolKey = keyof typeof PROTOCOLS
+export type RiskLevel = 'low' | 'medium' | 'high'
+
+export const RISK_PROTOCOLS: Record<RiskLevel, ProtocolKey[]> = {
+  low: ['aave', 'bybit', 'meth'],
+  medium: ['aave', 'merchantMoe', 'meth', 'agni'],
+  high: ['merchantMoe', 'agni', 'init', 'meth'],
+}
