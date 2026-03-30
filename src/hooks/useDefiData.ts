@@ -1,49 +1,30 @@
 import { useState, useEffect } from 'react'
 
-export type DefiStats = {
+export type DefiData = {
   mantleTVL: string
   aaveTVL: string
   methTVL: string
   agniTVL: string
   initTVL: string
-  loading: boolean
+  merchantMoeTVL: string
   lastUpdated: string
 }
 
-export function useDefiData(): DefiStats {
-  const [stats, setStats] = useState<DefiStats>({
-    mantleTVL: '...',
-    aaveTVL: '...',
-    methTVL: '...',
-    agniTVL: '...',
-    initTVL: '...',
-    loading: true,
-    lastUpdated: '',
-  })
+export function useDefiData() {
+  const [data, setData] = useState<DefiData | null>(null)
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetch() {
       try {
-        const res = await fetch('/api/defi-stats')
-        const data = await res.json()
-        setStats({
-          mantleTVL: data.mantleTVL,
-          aaveTVL: data.aaveTVL,
-          methTVL: data.methTVL,
-          agniTVL: data.agniTVL,
-          initTVL: data.initTVL,
-          loading: false,
-          lastUpdated: new Date(data.lastUpdated).toLocaleTimeString(),
-        })
-      } catch {
-        setStats((prev) => ({ ...prev, loading: false }))
-      }
+        const res = await window.fetch('/api/defi-stats')
+        const json = await res.json()
+        setData(json)
+      } catch {}
     }
-
-    fetchData()
-    const interval = setInterval(fetchData, 60000)
+    fetch()
+    const interval = setInterval(fetch, 60000)
     return () => clearInterval(interval)
   }, [])
 
-  return stats
+  return data
 }
